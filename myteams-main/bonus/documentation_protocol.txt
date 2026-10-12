@@ -1,0 +1,192 @@
+/help Le client doit envoyer 0
+/login [\"user_name\"] Le client doit envoyer 1 \ if log -> serv ret -1
+/logout Le client doit envoyer 2 \ if logout -> serv ret -2
+/users Le client doit envoyer 3 \ if users -> serv ret -3 + char *users(separator = ;)
+/user [\"user_uuid\"] Le client doit envoyer 4 \ if user -> serv ret -4 + char *user 
+/send [\"user_uuid\"] [\"message_body\"] Le client doit envoyer 5 \if send -> serv ret -5 
+/messages [\"user_uuid\"] Le client doit envoyer 6 \if messages -> serv ret -6 + char *message(separator = ;)
+/subscribe [\"team_uuid\"] Le client doit envoyer 7 \if subscribe -> serv ret -7 + char *team else 7 + char *falseteams
+/subscribed ?[\"team_uuid\"] Le client doit envoyer 8 \ if subscribed -> serv ret -8 + char *sublist(separator = ;)
+/unsubscribe [\"team_uuid\"] Le client doit envoyer 9 \if unsubscribed -> serv ret -9 + char *unsub else 9 + char *falseunsub
+/use ?[\"team_uuid\"] ?[\"channel_uuid\"] ?[\"thread_uuid\"] Le client doit envoyer 11
+/create Le client doit envoyer 11
+/list Le client doit envoyer 12
+/info Le client doit envoyer 13
+
+COMMANDS SERVER ---> CLIENT
+Commande faites : ✅✅✅✅✅✅
+Commande pas faites : ❌❌❌❌
+Commande à compléter : ⏳⏳⏳⏳
+_______________________________
+
+int client_event_logged_in(char const *user_uuid, const char *user_name);
+-------> 1 user_uuid user_name
+/login "user_name" ✅
+(envoie seulement a la session tcp client)
+
+_______________________________
+
+int client_event_logged_out(char const *user_uuid, const char *user_name);
+-------> 2 user_uuid user_name
+/logout ✅
+(envoie seulement a la session tcp client)
+
+_______________________________
+
+int client_print_users(char const *user_uuid, char const *user_name, int user_status);
+-------> 3 user_uuid user_name user_status
+/users ✅
+/subscribed "team_uuid" ❌
+(envoie seulement a la session tcp client)
+
+_______________________________
+
+int client_print_user(char const *user_uuid, char const *user_name, int user_status);
+-------> 4 user_uuid user_name user_status
+/user "user_uuid" ✅
+/info ✅
+(envoie seulement a la session tcp client)
+
+_______________________________
+int client_private_message_print_messages(char const *sender_uuid, time_t message_timestamp, char const *message_body);
+-------> 6 sender_uuid message_timestamp message_body
+/messages "user_uuid" ✅
+(envoie seulement a la session tcp client)
+
+_______________________________
+
+int client_print_team_created(char const *team_uuid, char const *team_name, char const *team_description);
+-------> 11 0 team_uuid team_name team_description
+/create "team_name" "team_description" ✅
+(envoie seulement a la session tcp client)
+
+int client_print_channel_created(char const *channel_uuid, char const *channel_name, char const *channel_description);
+-------> 11 1 channel_uuid channel_name channel_description
+/create "channel_name" "channel_description" ✅
+(envoie seulement a la session tcp client)
+
+int client_print_thread_created(char const *thread_uuid, char const *user_uuid, time_t thread_timestamp, char const *thread_title, char const *thread_body);
+-------> 11 2 thread_uuid user_uuid thread_timestamp thread_title thread_body
+/create "thread_title" "thread_body" ✅
+(envoie seulement a la session tcp client)
+
+
+int client_print_reply_created(char const *thread_uuid, char const *user_uuid, time_t reply_timestamp, char const *reply_body);
+-------> 11 3 thread_uuid user_uuid reply_timestamp reply_body
+/create "reply_body" ✅
+(envoie seulement a la session tcp client)
+
+_______________________________
+
+int client_print_teams(char const *team_uuid, char const *team_name, char const *team_description);
+-------> 12 0 team_uuid team_name team_description
+/list ✅
+/subscribed ❌
+(envoie seulement a la session tcp client)
+
+
+int client_team_print_channels(char const *channel_uuid, char const *channel_name, char const *channel_description);
+-------> 12 1 channel_uuid channel_name channel_description
+/list ✅
+(envoie seulement a la session tcp client)
+
+
+int client_channel_print_threads(char const *thread_uuid, char const *user_uuid, time_t thread_timestamp, char const *thread_title, char const *thread_body);
+-------> 12 2 thread_uuid user_uuid thread_timestamp thread_title thread_body
+/list ✅
+(envoie seulement a la session tcp client)
+
+int client_thread_print_replies(char const *thread_uuid, char const *user_uuid, time_t reply_timestamp, char const *reply_body);
+-------> 12 2 thread_uuid user_uuid reply_timestamp reply_body
+/list ✅
+(envoie seulement a la session tcp client)
+_______________________________
+
+int client_print_team(char const *team_uuid, char const *team_name, char const *team_description);
+-------> 13 0 team_uuid team_name team_description
+/info ✅
+(envoie seulement a la session tcp client)
+
+int client_print_channel(char const *channel_uuid, char const *channel_name, char const *channel_description);
+-------> 13 1 channel_uuid channel_name channel_description
+/info ✅
+(envoie seulement a la session tcp client)
+
+int client_print_thread(char const *thread_uuid, char const *user_uuid, time_t thread_timestamp, char const *thread_title, char const *thread_body);
+-------> 13 2 thread_uuid user_uuid thread_timestamp thread_title thread_body
+/info ✅
+(envoie seulement a la session tcp client)
+
+_______________________________
+
+L'utilisateur actuellement connecté reçoit un message privé : int client_event_private_message_received(char const *user_uuid, char const *message_body);
+-------> 14 user_uuid message_body
+/send "user_uuid" "message_body"
+(envoie le message a la session du destinataire si connecté )
+✅
+
+_______________________________
+
+client_print_subscribed(char const *user_uuid, char const *team_uuid);
+-------> 7 user_uuid team_uuid
+/subscribe "team_uuid" ❌
+(envoie seulement a la session tcp client)
+
+_______________________________
+
+client_print_unsubscribed(char const *user_uuid, char const *team_uuid);
+-------> 8 user_uuid team_uuid
+/subscribe "team_uuid" ❌
+(envoie seulement a la session tcp client)
+
+_______________________________
+
+int client_event_team_created(char const *team_uuid, char const *team_name, char const *team_description);
+-------> 15 0 team_uuid team_name team_description
+/create "team_name" "team_description" ✅
+(Envoie a tout les clients tcp connecté)
+
+int client_event_channel_created(char const *channel_uuid, char const *channel_name, char const *channel_description);
+-------> 15 1 channel_uuid channel_name channel_description
+/create "channel_name" "channel_description" ✅
+(Envoie a tout les clients tcp connecté)
+
+int client_event_thread_created(char const *thread_uuid, char const *user_uuid, time_t thread_timestamp, char const *thread_title, char const *thread_body);
+-------> 15 2 thread_uuid user_uuid thread_timestamp thread_title thread_body
+/create "thread_title" "thread_body" ✅
+(Envoie a tout les clients tcp connecté)
+
+int client_event_thread_reply_received(char const *team_uuid, char const *thread_uuid, char const *user_uuid, char const *reply_body);
+-------> 15 3 team_uuid thread_uuid user_uuid reply_body
+/create "reply_body" ✅
+(Envoie a tout les clients tcp connecté)
+
+_______________________________
+
+int client_error_unknown_team(char const *team_uuid);
+-------> 16 0 team_uuid ❌
+(envoie seulement a la session tcp client)
+
+int client_error_unknown_channel(char const *channel_uuid);
+-------> 16 1 channel_uuid ❌
+(envoie seulement a la session tcp client)
+
+int client_error_unknown_thread(char const *thread_uuid);
+-------> 16 2 thread_uuid ❌
+(envoie seulement a la session tcp client)
+
+int client_error_unknown_user(char const *user_uuid);
+-------> 16 3 ❌
+(envoie seulement a la session tcp client)
+
+int client_error_unauthorized(void);
+-------> 16 4 
+** Everything except /login ✅
+(envoie seulement a la session tcp client)
+
+int client_error_already_exist(void);
+-------> 16 5 ✅
+(envoie seulement a la session tcp client)
+
+
+Note : Message avec guillemet pas encore géré coté serveur.
